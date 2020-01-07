@@ -8,6 +8,9 @@ verify_ssl = true
 [packages]
 jupyterlab = "*"
 tweepyrate = {editable = true,path = "./tweepyrate"}
+mongoengine = "*"
+hatespeech-collection = {editable = true,path = "."}
+blinker = "*"
 
 [requires]
 python_version = "3.6"
