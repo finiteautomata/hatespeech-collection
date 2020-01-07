@@ -20,8 +20,8 @@ class ReplyListener(tweepy.StreamListener):
 
                 tweet.save()
                 self._replies += 1
-                if self._count % 1000 == 0:
-                    print(f"{self._count / 1000:.2f}K tweets bajados")
+                if self._count % 100 == 0:
+                    print(f"{self._count / 1000:.2f}K tweets bajados sobre {self.query}")
                     print(f"{self._replies / 1000:.2f}K respuestas")
         except NotUniqueError as e:
             pass

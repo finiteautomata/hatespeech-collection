@@ -11,6 +11,15 @@ class Tweet(DynamicDocument):
     id = LongField(primary_key=True)
     created_at = DateTimeField()
 
+    meta = {
+        'indexes': [
+            {
+                'fields': ['$text'],
+                'default_language': 'spanish',
+            },
+            'query'
+        ]
+    }
 
 def update_text(sender, document):
     tweet = document
