@@ -12,6 +12,7 @@ mongoengine = "*"
 hatespeech-collection = {editable = true,path = "."}
 blinker = "*"
 fire = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.6"
