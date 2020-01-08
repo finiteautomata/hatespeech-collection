@@ -13,7 +13,8 @@ def fetch_and_save(*args):
     try:
         status = app.get_status(tweet_id, tweet_mode="extended")
         tweet = Tweet(**status._json)
-        tweet.save()
+        # I don't save it here because pymongo is not threadsafe
+        #tweet.save()
         return (tweet_id, tweet)
     except tweepy.TweepError as e:
         return (tweet_id, e)
@@ -32,7 +33,14 @@ def fetch_tweets(apps, tweet_ids):
         )
 
         # This hack is just to make tqdm work.
-        list(tqdm(iterator, total=len(tweet_ids)))
+        ret = list(tqdm(iterator, total=len(tweet_ids)))
+
+        print("Saving tweets and errors")
+        for tweet_id, response in ret:
+            if type(response) is Tweet:
+                tweet = response
+                tweet.save()
+
 
 
 def find_upstream_tweets(database):
