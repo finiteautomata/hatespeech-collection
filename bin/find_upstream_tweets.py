@@ -1,10 +1,11 @@
+import time
 from itertools import cycle
-from mongoengine import connect
+from multiprocessing import Pool
+from tqdm import tqdm
+from mongoengine import connect, ValidationError, NotUniqueError
 from tweepyrate import create_apps
 import fire
 import tweepy
-from multiprocessing import Pool
-from tqdm import tqdm
 from hate_collector.models import Tweet
 
 def fetch_and_save(*args):
@@ -38,36 +39,49 @@ def fetch_tweets(apps, tweet_ids):
         print("Saving tweets and errors")
         for tweet_id, response in ret:
             if type(response) is Tweet:
-                tweet = response
-                tweet.save()
+                try:
+                    tweet = response
+                    tweet.save()
+                except (ValidationError, NotUniqueError) as e:
+                    print(e)
+                    continue
 
 
 
-def find_upstream_tweets(database):
+def find_upstream_tweets(database, sleep_time=300):
     """
     Look for tweets whose replies are within our database
     """
     apps = create_apps("config/my_apps.json")
 
     connect(database)
+    epoch = 0
 
-    replies = Tweet.objects(
-        in_reply_to_status_id__exists= True,
-        in_reply_to_status_id__ne= None,
-    )
+    while True:
+        print(f"{'='*80}\n" * 3)
+        print(f"Epoch number {epoch}")
 
-    upstream_ids = [t.in_reply_to_status_id for t in replies]
+        replies = Tweet.objects(
+            in_reply_to_status_id__exists= True,
+            in_reply_to_status_id__ne= None,
+        )
 
-    print(f"\nThere are {len(replies)} replies in our database")
+        upstream_ids = [t.in_reply_to_status_id for t in replies]
+        print(f"\nThere are {len(replies)} replies in our database")
 
-    upstream_in_db = Tweet.objects(id__in=upstream_ids)
-    ids_in_db = set(t.id for t in upstream_in_db)
+        upstream_in_db = Tweet.objects(id__in=upstream_ids)
+        ids_in_db = set(t.id for t in upstream_in_db)
 
-    print(f"{len(ids_in_db)} of upstream already in database")
+        print(f"{len(ids_in_db)} of upstream already in database")
 
-    tweet_ids = [tid for tid in upstream_ids if tid not in ids_in_db]
+        tweet_ids = [tid for tid in upstream_ids if tid not in ids_in_db]
 
-    fetch_tweets(apps, tweet_ids)
+        fetch_tweets(apps, tweet_ids)
+
+        print(f"Sleeping for {sleep_time} seconds")
+        time.sleep(sleep_time)
+
+        epoch += 1
 
 
 
