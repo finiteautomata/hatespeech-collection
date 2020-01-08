@@ -24,9 +24,12 @@ class Tweet(DynamicDocument):
 def update_text(sender, document):
     tweet = document
     try:
-        tweet.text = tweet.extended_tweet["full_text"]
+        tweet.text = tweet.full_text
     except AttributeError:
-        pass
+        try:
+            tweet.text = tweet.extended_tweet["full_text"]
+        except AttributeError:
+            pass
 
 
 signals.pre_save.connect(update_text, sender=Tweet)
