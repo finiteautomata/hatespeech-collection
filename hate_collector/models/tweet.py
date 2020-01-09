@@ -7,7 +7,7 @@ from mongoengine import (
 )
 
 class Tweet(DynamicDocument):
-    text = StringField(max_length=500)
+    text = StringField()
     id = LongField(primary_key=True)
     created_at = DateTimeField()
 
