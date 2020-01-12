@@ -6,7 +6,7 @@ from mongoengine import connect, ValidationError, NotUniqueError
 from tweepyrate import create_apps
 import fire
 import tweepy
-from hate_collector.models import Tweet
+from hate_collector.models import Tweet, APIError
 
 def fetch_and_save(*args):
     # TODO: Fix this. I don't know why I should do this way
@@ -37,14 +37,30 @@ def fetch_tweets(apps, tweet_ids):
         ret = list(tqdm(iterator, total=len(tweet_ids)))
 
         print("Saving tweets and errors")
+        new_tweets = 0
+        new_errors = 0
         for tweet_id, response in ret:
             if type(response) is Tweet:
                 try:
                     tweet = response
                     tweet.save()
+                    new_tweets += 1
                 except (ValidationError, NotUniqueError) as e:
-                    print(e)
                     continue
+            elif type(response) is tweepy.TweepError:
+                try:
+                    error = APIError(
+                        message=str(response),
+                        api_code=response.api_code,
+                        tweet_id=tweet_id
+                    )
+                    
+                    error.save()
+                    
+                    new_errors += 1
+                except NotUniqueError as e:
+                    continue
+        print(f"There are {new_tweets} new tweets and {new_errors} new errors")
 
 
 
@@ -58,7 +74,7 @@ def find_upstream_tweets(database, sleep_time=300):
     epoch = 0
 
     while True:
-        print(f"{'='*80}\n" * 3)
+        print(f"{'='*40}\n" * 3)
         print(f"Epoch number {epoch}")
 
         replies = Tweet.objects(
@@ -74,9 +90,17 @@ def find_upstream_tweets(database, sleep_time=300):
 
         print(f"{len(ids_in_db)} of upstream already in database")
 
-        tweet_ids = [tid for tid in upstream_ids if tid not in ids_in_db]
+        not_in_db = [tid for tid in upstream_ids if tid not in ids_in_db]
 
-        fetch_tweets(apps, tweet_ids)
+        # Last: is there any of those with already known errors?
+        
+        tweets_with_errors = APIError.objects(tweet_id__in=not_in_db)
+        error_ids = set(t.id for t in tweets_with_errors)
+        
+        without_errors = [tid for tid in not_in_db if tid not in error_ids]
+        
+        print(f"{len(without_errors)} tweets are without any error")
+        fetch_tweets(apps, without_errors)
 
         print(f"Sleeping for {sleep_time} seconds")
         time.sleep(sleep_time)
