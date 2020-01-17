@@ -10,8 +10,7 @@ from hate_collector.models import Tweet, APIError
 
 def fetch_and_save(*args):
     # TODO: Fix this. I don't know why I should do this way
-    app, tweet = args[0]
-    tweet_id = tweet.id
+    app, tweet_id = args[0]
     try:
         status = app.get_status(tweet_id, tweet_mode="extended")
         return (tweet_id, status)
@@ -19,16 +18,11 @@ def fetch_and_save(*args):
         return (tweet_id, e)
 
 
-def fetch_errors(apps, tweets):
+def fetch_errors(apps, tweet_ids):
     with Pool(len(apps)) as p:
-        pbar = tqdm(total=len(tweet_ids))
-
-        def update_pbar(*args, **kwargs):
-            pbar.update()
-
         iterator = p.imap(
             fetch_and_save,
-            zip(cycle(apps), tweets)
+            zip(cycle(apps), tweet_ids)
         )
 
         # This hack is just to make tqdm work.
@@ -66,8 +60,10 @@ def search_removed_tweets(database):
         query=None,
     )
 
+    tweet_ids = [tw.id for tw in tweets]
+
     print(f"\nThere are {tweets.count()} to look for in our database")
-    fetch_errors(apps, [tw.id for tw in tweets])
+    fetch_errors(apps, tweet_ids)
 
 
 if __name__ == '__main__':
