@@ -71,7 +71,7 @@ def search_for_nonprocessed_tweets(apps, db):
 
     new_tweets, new_errors = get_tweets(
         apps,
-        upstream_ids,
+        list(upstream_ids),
         processor.process_tweet,
         processor.process_error,
     )
