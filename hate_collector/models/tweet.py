@@ -1,3 +1,4 @@
+import datetime
 from mongoengine import (
     DoesNotExist,
     DynamicDocument,
@@ -11,7 +12,8 @@ from mongoengine import (
 class Tweet(DynamicDocument):
     text = StringField()
     id = LongField(primary_key=True)
-    created_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    last_checked_for_errors = DateTimeField(default=datetime.datetime.utcnow)
     # This field represents if we should check
     look_for_upstream = BooleanField(default=True)
     meta = {
@@ -23,6 +25,8 @@ class Tweet(DynamicDocument):
             'query',
             'look_for_upstream',
             'in_reply_to_status_id',
+            'created_at',
+            'last_checked_for_errors',
         ]
     }
 
@@ -47,7 +51,6 @@ def check_upstream(sender, document):
         tweet.look_for_upstream = False
     except DoesNotExist as e:
         tweet.look_for_upstream = True
-
 
 
 signals.pre_save.connect(update_text, sender=Tweet)

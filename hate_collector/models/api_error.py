@@ -8,9 +8,9 @@ from mongoengine import (
 
 class APIError(DynamicDocument):
     """
-    This model help us track API errors while retrieving tweets. 
+    This model help us track API errors while retrieving tweets.
     Tracking these is helpful to recover statuses containing possibly hate speech
-    
+
     """
     message = StringField()
     api_code = LongField(required=True)
@@ -24,4 +24,3 @@ class APIError(DynamicDocument):
         ],
         'collection': 'api_error',
     }
-    
