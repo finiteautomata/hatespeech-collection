@@ -13,6 +13,7 @@ hatespeech-collection = {editable = true,path = "."}
 blinker = "*"
 fire = "*"
 tqdm = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"

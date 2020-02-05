@@ -1,4 +1,5 @@
 """
 Entrypoint for hate_collector
 """
-from .reply_listener import ReplyListener
+from .tweet_listener import TweetListener
+from .models import Tweet
