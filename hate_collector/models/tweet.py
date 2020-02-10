@@ -16,6 +16,7 @@ class Tweet(DynamicDocument):
     last_checked_for_errors = DateTimeField(default=datetime.datetime.utcnow)
     # This field represents if we should check
     look_for_upstream = BooleanField(default=True)
+    in_reply_to_status_id = LongField()
     meta = {
         'indexes': [
             {

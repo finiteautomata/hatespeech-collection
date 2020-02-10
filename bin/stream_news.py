@@ -13,6 +13,8 @@ default_queries = [
     "@perfilcom",
     #Diarios Españoles
     "@elmundoes",
+    "@lavanguardia",
+    "@abc_es",
     #Uruguayos
     "@elpaisuy",
     # Chilenos
