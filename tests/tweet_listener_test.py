@@ -3,73 +3,27 @@ from unittest.mock import MagicMock
 from hate_collector import TweetListener
 
 @pytest.fixture
-def created_tweet():
+def status():
     return MagicMock()
 
 @pytest.fixture
-def not_reply_status():
-    return MagicMock(in_reply_to_status_id=None)
+def queue():
+    return MagicMock()
 
 @pytest.fixture
-def reply_status():
-    return MagicMock(in_reply_to_status_id=123)
+def tweet_listener(queue):
+    return TweetListener("query", queue)
 
-@pytest.fixture
-def tweet_listener():
-    return TweetListener("query")
+def test_creates_with_query_and_queue(queue):
+    listener = TweetListener("query", queue)
 
-def test_creates_with_zero_counts(tweet_listener):
-    assert tweet_listener._count == 0
-    assert tweet_listener._replies == 0
+    assert listener.query == "query"
+    assert listener.queue == queue
 
-def test_creates_only_replies_flag():
-    tweet_listener = TweetListener("query", only_replies=True)
-    assert tweet_listener._only_replies
+def test_pushes_to_queue_query_and_item(tweet_listener, queue, status):
+    tweet_listener.on_status(status)
 
-def test_on_status_saves_if_not_reply(created_tweet, not_reply_status):
-    def my_mock_tweet_class(*args, **kwargs):
-        return created_tweet
+    queue.put.assert_called_with((status, "query"))
 
-    listener = TweetListener(
-        "query", only_replies=False, tweet_class=my_mock_tweet_class
-    )
-
-    listener.on_status(not_reply_status)
-
-    created_tweet.save.assert_called_with()
-
-def test_on_status_saves_if_reply(created_tweet, reply_status):
-    def my_mock_tweet_class(*args, **kwargs):
-        return created_tweet
-
-    listener = TweetListener(
-        "query", only_replies=False, tweet_class=my_mock_tweet_class
-    )
-
-    listener.on_status(reply_status)
-
-    created_tweet.save.assert_called_with()
-
-def test_on_status_not_saves_if_not_reply_and_only_replies(created_tweet, not_reply_status):
-    def my_mock_tweet_class(*args, **kwargs):
-        return created_tweet
-
-    listener = TweetListener(
-        "query", only_replies=True, tweet_class=my_mock_tweet_class
-    )
-
-    listener.on_status(not_reply_status)
-
-    created_tweet.save.assert_not_called()
-
-def test_on_status_saves_if_reply_and_only_replies(created_tweet, reply_status):
-    def my_mock_tweet_class(*args, **kwargs):
-        return created_tweet
-
-    listener = TweetListener(
-        "query", only_replies=True, tweet_class=my_mock_tweet_class
-    )
-
-    listener.on_status(reply_status)
-
-    created_tweet.save.assert_called_with()
+def test_on_error_returns_true(tweet_listener):
+    assert tweet_listener.on_error(404)

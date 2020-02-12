@@ -3,7 +3,10 @@ from mongoengine import connect
 from tweepyrate import create_apps
 import random
 import tweepy
-from hate_collector import TweetListener
+import time
+from queue import Queue
+import threading
+from hate_collector import TweetListener, TweetWorker
 
 default_queries = [
     "@infobae",
@@ -21,8 +24,19 @@ default_queries = [
     "@latercera", # Diario chileno
  ]
 
+def create_worker(queue):
+    tweet_worker = TweetWorker()
 
-def stream_news(database, queries=default_queries):
+    def worker():
+        while True:
+            status, query = queue.get(block=True)
+            tweet_worker.work(status, query)
+            queue.task_done()
+
+    return worker
+
+
+def stream_news(database, queries=default_queries, num_workers=3):
     """
     Look for tweets mentioning (or from) any of these newspapers
 
@@ -41,11 +55,22 @@ def stream_news(database, queries=default_queries):
 
     print(f"Looking for {queries}")
 
+    # Create queue and workers
+    print(f"Creating queue and {num_workers} workers")
+    tweet_queue = Queue()
+    threads = []
+    for i in range(num_workers):
+        t = threading.Thread(target=create_worker(tweet_queue))
+        t.start()
+        threads.append(t)
+
+
+
     for i, word in enumerate(queries):
         app = apps[i % len(apps)]
         print(f"Creating listener for {word}")
 
-        myStreamListener = TweetListener(word)
+        myStreamListener = TweetListener(word, tweet_queue)
         myStream = tweepy.Stream(auth = app.auth, listener=myStreamListener)
         myStream.filter(track=[word], is_async=True, languages=["es"])
 
