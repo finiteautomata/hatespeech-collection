@@ -6,7 +6,8 @@ import tweepy
 import time
 from queue import Queue
 import threading
-from hate_collector import TweetListener, TweetWorker
+from tweepyrate.streaming import create_queue, stream_query
+from hate_collector import TweetWorker
 
 default_queries = [
     "@infobae",
@@ -24,32 +25,7 @@ default_queries = [
     "@latercera", # Diario chileno
  ]
 
-def create_worker(queue, worker_class):
-    tweet_worker = worker_class()
 
-    def worker():
-        while True:
-            args = queue.get(block=True)
-            tweet_worker.work(*args)
-            queue.task_done()
-
-    return worker
-
-def create_queue(num_workers, worker_class):
-    queue = Queue()
-    threads = []
-    for i in range(num_workers):
-        t = threading.Thread(target=create_worker(queue, worker_class))
-        t.start()
-        threads.append(t)
-
-    return queue
-
-def stream(query, app, queue, **kwargs):
-    myStreamListener = TweetListener(query, queue)
-    myStream = tweepy.Stream(auth = app.auth, listener=myStreamListener)
-    myStream.filter(track=[query], is_async=True, **kwargs)
-    return myStreamListener
 
 
 def stream_news(database, queries=default_queries, num_workers=3):
@@ -78,7 +54,7 @@ def stream_news(database, queries=default_queries, num_workers=3):
     for i, word in enumerate(queries):
         app = apps[i % len(apps)]
         print(f"Creating listener for {word}")
-        stream(word, app, queue, languages=["es"])
+        stream_query(word, app, queue, languages=["es"])
 
 
 if __name__ == '__main__':
