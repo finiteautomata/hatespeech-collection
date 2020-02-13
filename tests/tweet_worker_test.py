@@ -18,10 +18,6 @@ def reply_status():
 def tweet_worker():
     return TweetWorker()
 
-def test_creates_with_zero_counts(tweet_worker):
-    assert tweet_worker._count == 0
-    assert tweet_worker._replies == 0
-
 def test_creates_only_replies_flag():
     tweet_worker = TweetWorker(only_replies=True)
     assert tweet_worker._only_replies

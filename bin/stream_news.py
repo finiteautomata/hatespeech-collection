@@ -24,16 +24,32 @@ default_queries = [
     "@latercera", # Diario chileno
  ]
 
-def create_worker(queue):
-    tweet_worker = TweetWorker()
+def create_worker(queue, worker_class):
+    tweet_worker = worker_class()
 
     def worker():
         while True:
-            status, query = queue.get(block=True)
-            tweet_worker.work(status, query)
+            args = queue.get(block=True)
+            tweet_worker.work(*args)
             queue.task_done()
 
     return worker
+
+def create_queue(num_workers, worker_class):
+    queue = Queue()
+    threads = []
+    for i in range(num_workers):
+        t = threading.Thread(target=create_worker(queue, worker_class))
+        t.start()
+        threads.append(t)
+
+    return queue
+
+def stream(query, app, queue, **kwargs):
+    myStreamListener = TweetListener(query, queue)
+    myStream = tweepy.Stream(auth = app.auth, listener=myStreamListener)
+    myStream.filter(track=[query], is_async=True, **kwargs)
+    return myStreamListener
 
 
 def stream_news(database, queries=default_queries, num_workers=3):
@@ -57,22 +73,12 @@ def stream_news(database, queries=default_queries, num_workers=3):
 
     # Create queue and workers
     print(f"Creating queue and {num_workers} workers")
-    tweet_queue = Queue()
-    threads = []
-    for i in range(num_workers):
-        t = threading.Thread(target=create_worker(tweet_queue))
-        t.start()
-        threads.append(t)
-
-
+    queue = create_queue(num_workers, TweetWorker)
 
     for i, word in enumerate(queries):
         app = apps[i % len(apps)]
         print(f"Creating listener for {word}")
-
-        myStreamListener = TweetListener(word, tweet_queue)
-        myStream = tweepy.Stream(auth = app.auth, listener=myStreamListener)
-        myStream.filter(track=[word], is_async=True, languages=["es"])
+        stream(word, app, queue, languages=["es"])
 
 
 if __name__ == '__main__':
