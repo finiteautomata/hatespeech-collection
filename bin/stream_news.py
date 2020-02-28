@@ -13,8 +13,9 @@ default_queries = [
     "@infobae",
     "@LANACION",
     "@clarincom",
-    "@cronica",
-    "@perfilcom",
+    #"@cronica",
+    #"@perfilcom",
+
     #Diarios Españoles
     "@elmundoes",
     "@lavanguardia",
@@ -23,6 +24,9 @@ default_queries = [
     "@elpaisuy",
     # Chilenos
     "@latercera", # Diario chileno
+    # Diarios de derecha
+    "@laderechadiario",
+    "@PrensaRepublica",
  ]
 
 
