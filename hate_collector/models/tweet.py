@@ -16,7 +16,8 @@ class Tweet(DynamicDocument):
     last_checked_for_errors = DateTimeField(default=datetime.datetime.utcnow)
     # This field represents if we should check
     look_for_upstream = BooleanField(default=True)
-    interesting = BooleanField(default=False)
+    interesting = BooleanField(default=False, required=True)
+    checked = BooleanField(default=False, required=True)
 
     in_reply_to_status_id = LongField()
     meta = {
@@ -29,6 +30,7 @@ class Tweet(DynamicDocument):
             'look_for_upstream',
             'in_reply_to_status_id',
             'created_at',
+            'checked',
             'last_checked_for_errors',
             'interesting',
         ]
