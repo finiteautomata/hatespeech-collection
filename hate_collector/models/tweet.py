@@ -18,7 +18,8 @@ class Tweet(DynamicDocument):
     look_for_upstream = BooleanField(default=True)
     interesting = BooleanField(default=False, required=True)
     checked = BooleanField(default=False, required=True)
-
+    user_name = StringField()
+    
     in_reply_to_status_id = LongField()
     meta = {
         'indexes': [
@@ -58,6 +59,9 @@ def check_upstream(sender, document):
     except DoesNotExist as e:
         tweet.look_for_upstream = True
 
+def set_user_name(sender, document):
+    document.user_name = document.user["screen_name"].lower()
 
 signals.pre_save.connect(update_text, sender=Tweet)
 signals.pre_save.connect(check_upstream, sender=Tweet)
+signals.pre_save.connect(set_user_name, sender=Tweet)
