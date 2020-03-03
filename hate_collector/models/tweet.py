@@ -19,7 +19,7 @@ class Tweet(DynamicDocument):
     interesting = BooleanField(default=False, required=True)
     checked = BooleanField(default=False, required=True)
     user_name = StringField()
-    
+
     in_reply_to_status_id = LongField()
     meta = {
         'indexes': [
@@ -34,6 +34,7 @@ class Tweet(DynamicDocument):
             'checked',
             'last_checked_for_errors',
             'interesting',
+            'user_name'
         ]
     }
 
