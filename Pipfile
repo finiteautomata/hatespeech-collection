@@ -16,6 +16,7 @@ fire = "*"
 tqdm = "*"
 pytest = "*"
 ipywidgets = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.6"

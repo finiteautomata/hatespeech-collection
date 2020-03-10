@@ -13,8 +13,8 @@ default_queries = [
     "@infobae",
     "@LANACION",
     "@clarincom",
-    #"@cronica",
-    #"@perfilcom",
+    "@cronica",
+    "@perfilcom",
 
     #Diarios Españoles
     "@elmundoes",
@@ -32,7 +32,7 @@ default_queries = [
 
 
 
-def stream_news(database, queries=default_queries, num_workers=3):
+def stream_news(database, queries=default_queries, apps_file="config/my_apps.json", num_workers=3):
     """
     Look for tweets mentioning (or from) any of these newspapers
 
@@ -44,7 +44,7 @@ def stream_news(database, queries=default_queries, num_workers=3):
     queries: list
         List of terms (or @usernames) to look for
     """
-    apps = create_apps("config/my_apps.json")
+    apps = create_apps(apps_file)
     random.shuffle(apps)
 
     connect(database)

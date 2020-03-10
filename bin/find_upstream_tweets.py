@@ -79,11 +79,11 @@ def search_for_nonprocessed_tweets(apps, db):
     print(f"There are {new_tweets} new tweets and {new_errors} new errors")
 
 
-def find_upstream_tweets(database, sleep_time=300):
+def find_upstream_tweets(database, apps_file="config/my_apps.json", sleep_time=300):
     """
     Look for tweets whose replies are within our database
     """
-    apps = create_apps("config/my_apps.json")
+    apps = create_apps(apps_file)
 
     client = connect(database)
     db = client[database]
