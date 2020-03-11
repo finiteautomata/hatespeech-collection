@@ -18,6 +18,7 @@ class Tweet(DynamicDocument):
     look_for_upstream = BooleanField(default=True)
     interesting = BooleanField(default=False, required=True)
     checked = BooleanField(default=False, required=True)
+    possibly_hateful_comments = BooleanField(default=False, required=True)
     user_name = StringField()
 
     in_reply_to_status_id = LongField()
