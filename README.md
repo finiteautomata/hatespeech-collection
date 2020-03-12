@@ -58,3 +58,10 @@ python bin/search_removed_tweets.py --database DATABASE_NAME
 ```
 
 This will save errors in `api_error` collection. A list of codes can be found [here](https://developer.twitter.com/en/docs/basics/response-codes)
+
+
+### Marking news as possibly hateful
+
+`Tweet` model has a `possibly_hateful_comments` field which is meant to be filled by another apps by marking those news possibly having some mysoginistic or racist comment.
+
+### Downloading news

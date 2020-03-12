@@ -17,6 +17,8 @@ tqdm = "*"
 pytest = "*"
 ipywidgets = "*"
 pandas = "*"
+newspaper3k = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"
