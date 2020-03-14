@@ -1,7 +1,9 @@
 import pytest
+from unittest.mock import Mock
 from datetime import datetime, timedelta
 from mongoengine import connect
 from hate_collector.models import Article, Comment
+
 
 comment_id = 0
 def comment():
@@ -49,3 +51,18 @@ def test_create_article():
     assert len(art.comments) == 2
     assert art.comments[0].text == comments[0].text
     assert art.comments[1].text == comments[1].text
+
+def test_create_with_class_method():
+    tweet = {
+        "_id": 123456,
+        "text": "Esto es una noticia muy triste",
+        "article": "Python 2 ya no tiene mantenimiento",
+        "created_at": datetime.utcnow(),
+        "replies" : [
+            {"_id": 1, "text": "Aguante Python3"},
+            {"_id": 1, "text": "Aguante Node"},
+        ]
+    }
+    art = Article.from_tweet(tweet)
+
+    art.save()

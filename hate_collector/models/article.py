@@ -26,8 +26,9 @@ class Article(DynamicDocument):
     def from_tweet(cls, tweet):
         article = cls(
             tweet_id=tweet["_id"],
+            created_at=tweet["created_at"],
             text=tweet["text"],
-            body=tweet["article"].text,
+            body=tweet["article"],
         )
 
         article.comments = []
@@ -35,7 +36,7 @@ class Article(DynamicDocument):
         for reply in tweet["replies"]:
             article.comments.append(Comment(
                 tweet_id=reply["_id"],
-                tweet=reply["text"],
+                text=reply["text"],
             ))
 
         return article

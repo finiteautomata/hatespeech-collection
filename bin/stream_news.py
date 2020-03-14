@@ -45,7 +45,6 @@ def stream_news(database, queries=default_queries, apps_file="config/my_apps.jso
         List of terms (or @usernames) to look for
     """
     apps = create_apps(apps_file)
-    random.shuffle(apps)
 
     connect(database)
 
@@ -57,7 +56,7 @@ def stream_news(database, queries=default_queries, apps_file="config/my_apps.jso
 
     for i, word in enumerate(queries):
         app = apps[i % len(apps)]
-        print(f"Creating listener for {word}")
+        print(f"Creating listener for {word} with {app.me().screen_name}")
         stream_query(word, app, queue, languages=["es"])
 
 
