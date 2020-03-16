@@ -1,3 +1,6 @@
 [submodule "tweepyrate"]
 	path = tweepyrate
 	url = https://github.com/finiteautomata/tweepyrate
+[submodule "hatespeech-models"]
+	path = hatespeech-models
+	url = git@github.com:finiteautomata/hatespeech-models.git

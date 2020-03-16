@@ -2,8 +2,8 @@ import fire
 from multiprocessing import Pool
 from mongoengine import connect
 from tqdm.auto import tqdm
-from newspaper import Article, ArticleException
-from hate_collector import models
+from newspaper import NewsArticle, ArticleException
+from hatespeech_models import Article
 import tweepy
 
 def download_article(tweet):
@@ -11,7 +11,7 @@ def download_article(tweet):
         if "article" in tweet:
             return
         news_url = tweet["entities"]["urls"][0]["expanded_url"]
-        article = Article(news_url)
+        article = NewsArticle(news_url)
         article.download()
         article.parse()
         if len(article.text) > 0:
@@ -33,7 +33,7 @@ def download_articles(tweets, num_workers):
                 tw["article"] = art
 
 def create_article(tweet):
-    art = models.Article.from_tweet(tweet)
+    art = Article.from_tweet(tweet)
 
     art.save()
 
@@ -83,7 +83,7 @@ def generate_instances(database, num_workers=4):
     print("Saving instances...")
     for tweet in tqdm(non_empty_arts):
         create_article(tweet)
-    print(f"There are {models.Article.objects.count()} instances")
+    print(f"There are {Article.objects.count()} instances")
 
 if __name__ == '__main__':
     fire.Fire(generate_instances)

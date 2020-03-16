@@ -3,7 +3,7 @@ from mongoengine import connect, ValidationError, NotUniqueError
 from tweepyrate import create_apps, get_tweets
 import fire
 import tweepy
-from hate_collector.models import Tweet, APIError
+from hatespeech_models import Tweet, APIError
 
 
 def save_error(tweet_id, response):

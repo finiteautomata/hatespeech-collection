@@ -1,6 +1,6 @@
 import tweepy
 from mongoengine import NotUniqueError
-from .models import Tweet
+from hatespeech_models import Tweet
 
 class TweetWorker:
     def __init__(self, only_replies=False, tweet_class=Tweet):
