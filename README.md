@@ -19,6 +19,61 @@ git submodule update
 pipenv install -e tweepyrate/
 ```
 
+3. Put tokens in `config/`
+
+(such as in `config/my_apps.json.template`)
+
+4. Start downloading news
+```
+python bin/stream_news.py --database DATABASE_NAME --apps_file APP_FILE
+```
+
+Meanwhile, download upstream tweets
+
+```
+python bin/find_upstream_tweets.py --database DATABASE_NAME --apps_file APP_FILE
+```
+
+5. Mark news having possibly hateful comments
+
+With a third-party app, mark some "news" as having possibly hateful comments. We mark them by setting `possibly_hateful_comments` in `Tweet` class
+
+Notice that we have no clear distinction
+
+5. Generate instances for labelling
+
+Once you consider you have enough news marked as having possibly hateful comments, run the following command:
+
+```
+python bin/generate_instances.py --database DATABASE_NAME
+```
+
+This will look for tweets having `user_name` of those in the queries (default: @lanacion, @infobae, etc) and marked with the flag `possibly_hateful_comments`. With those tweets, it will try to download and parse the respective news (following links in the original tweet) and finally it will generate another collection called `articles` having documents with this fashion
+
+```
+{
+  "tweet_id": <id of the tweet generating the news>
+  "text": <text of the tweet>
+  "body": <text of the news>
+  "comments": [
+      {
+        "tweet_id": <tweet_id of comment>
+        "text": <text of tweet>
+      }
+  ]
+}
+```
+
+6. Generate dumps
+
+If we want to export the database, we can use `mongodump` and `mongoexport` tools:
+
+```
+# This generates a mongo bson dump
+mongodump --db DB --collection article --out dumps/
+# To generate a JSON file:
+mongoexport -d hatespeech-news -c article --jsonArray --pretty  --out dumps/hatespeech-articles.json
+```
 
 ### Stream tweets commenting about news
 
@@ -64,4 +119,5 @@ This will save errors in `api_error` collection. A list of codes can be found [h
 
 `Tweet` model has a `possibly_hateful_comments` field which is meant to be filled by another apps by marking those news possibly having some mysoginistic or racist comment.
 
-### Downloading news
+
+### Dumping database
