@@ -20,6 +20,7 @@ pandas = "*"
 newspaper3k = "*"
 matplotlib = "*"
 hatespeech-models = {editable = true,path = "./hatespeech-models"}
+termcolor = "*"
 
 [requires]
 python_version = "3.6"
