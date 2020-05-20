@@ -3,6 +3,7 @@ from mongoengine import connect
 from tweepyrate import create_apps
 import random
 import tweepy
+import datetime
 import time
 from queue import Queue
 import threading
@@ -32,7 +33,9 @@ default_queries = [
 
 
 
-def stream_news(database, queries=default_queries, apps_file="config/my_apps.json", num_workers=3):
+def stream_news(
+    database, queries=default_queries, apps_file="config/my_apps.json",
+    num_workers=3, report_secs=600):
     """
     Look for tweets mentioning (or from) any of these newspapers
 
@@ -53,12 +56,29 @@ def stream_news(database, queries=default_queries, apps_file="config/my_apps.jso
     # Create queue and workers
     print(f"Creating queue and {num_workers} workers")
     queue = create_queue(num_workers, TweetWorker)
+    listeners = []
 
     for i, word in enumerate(queries):
-        app = apps[i % len(apps)]
+        app = apps[-(i+1) % len(apps)]
         print(f"Creating listener for {word} with {app.me().screen_name}")
-        stream_query(word, app, queue, languages=["es"])
+        listener = stream_query(word, app, queue, languages=["es"])
+        listeners.append(listener)
 
+    last_count = 0
+    while True:
+        # Print a report from time to time
+        print("=" * 40 + '\n\n')
+        print(datetime.datetime.now())
+
+        new_count = 0
+        for listener in listeners:
+            print(f"{listener.query:<25} -- {listener.count / 1000:.2f}K tweets")
+            new_count += listener.count
+
+        print(f"{new_count - last_count} new tweets")
+        
+        last_count = new_count
+        time.sleep(report_secs)
 
 if __name__ == '__main__':
     fire.Fire(stream_news)
