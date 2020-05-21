@@ -38,7 +38,7 @@ def generate_instances(database, num_workers=4, clean_before=True, rebuild=True)
 
     if clean_before:
         print(f"Cleaning {Article.objects.count()} objects")
-        Article.objects.delete()
+        Article.drop_collection()
 
     screen_names = [t[1:].lower() for t in db.tweet.distinct('query') if t is not None]
     print(f"Screen names: {' - '.join(screen_names)}")
