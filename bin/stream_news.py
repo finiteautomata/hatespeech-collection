@@ -1,12 +1,9 @@
 import fire
 from mongoengine import connect
 from tweepyrate import create_apps
-import random
-import tweepy
 import datetime
 import time
-from queue import Queue
-import threading
+from collections import defaultdict
 from tweepyrate.streaming import create_queue, stream_query
 from hate_collector import TweetWorker
 
@@ -64,7 +61,7 @@ def stream_news(
         listener = stream_query(word, app, queue, languages=["es"])
         listeners.append(listener)
 
-    last_count = 0
+    last_count = defaultdict(int)
     while True:
         # Print a report from time to time
         print("=" * 40 + '\n\n')
@@ -72,12 +69,14 @@ def stream_news(
 
         new_count = 0
         for listener in listeners:
-            print(f"{listener.query:<25} -- {listener.count / 1000:.2f}K tweets")
-            new_count += listener.count
+            old_count = last_count[listener.query]
+            last_count[listener.query] = listener.count
+            new_tweets = last_count[listener.query] - old_count
+            print(f"{listener.query:<25} -- {listener.count / 1000:.2f}K tweets ({new_tweets:<4} new tweets)")
 
-        print(f"{new_count - last_count} new tweets")
-        
-        last_count = new_count
+            new_count += new_tweets
+
+        print(f"{new_count} new tweets")
         time.sleep(report_secs)
 
 if __name__ == '__main__':
