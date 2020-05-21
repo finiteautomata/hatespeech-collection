@@ -1,3 +1,4 @@
+import os
 import time
 import fire
 from multiprocessing import Pool
@@ -7,6 +8,14 @@ import newspaper as ns
 from hatespeech_models import Article, Tweet
 from hate_collector.article import download_article
 import tweepy
+
+def connect_to_mongo(database):
+    mongo_host = os.environ.get("MONGO_HOST", 'localhost')
+    mongo_port = os.environ.get("MONGO_PORT", 27017)
+
+    print(f"Connecting to {mongo_host}:{mongo_port} - db : {database}")
+    client = connect(database)
+    return client[database]
 
 
 def download_article_and_replies(tweet):
@@ -32,8 +41,7 @@ def generate_instances(database, num_workers=4, clean_before=True, rebuild=True)
     Generate instances for annotation
     """
 
-    client = connect(database)
-    db = client[database]
+    db = connect_to_mongo(database)
     print("Creating articles and their comments")
 
     if clean_before:
