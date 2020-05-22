@@ -2,20 +2,12 @@ import os
 import time
 import fire
 from multiprocessing import Pool
-from mongoengine import connect
 from tqdm.auto import tqdm
 import newspaper as ns
 from hatespeech_models import Article, Tweet
 from hate_collector.article import download_article
+from hate_collector import connect_to_db
 import tweepy
-
-def connect_to_mongo(database):
-    mongo_host = os.environ.get("MONGO_HOST", 'localhost')
-    mongo_port = os.environ.get("MONGO_PORT", 27017)
-
-    print(f"Connecting to {mongo_host}:{mongo_port} - db : {database}")
-    client = connect(database)
-    return client[database]
 
 
 def download_article_and_replies(tweet):
@@ -41,7 +33,7 @@ def generate_instances(database, num_workers=4, clean_before=True, rebuild=True)
     Generate instances for annotation
     """
 
-    db = connect_to_mongo(database)
+    db = connect_to_db(database)
     print("Creating articles and their comments")
 
     if clean_before:
@@ -81,8 +73,8 @@ def generate_instances(database, num_workers=4, clean_before=True, rebuild=True)
         in_reply_to_status_id=None,
         retweeted_status=None
     ).as_pymongo()
-    tweets = list(tweets)
-    print(f"There are {len(tweets)/1000:.2f}K news\n\n")
+    #tweets = list(tweets)
+    print(f"There are {tweets.count()/1000:.2f}K news\n\n")
     print("Searching for articles...")
     download_articles(tweets, num_workers)
     # Now "article" should be in each tweet
