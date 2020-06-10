@@ -10,6 +10,8 @@ from hatespeech_models import Tweet, APIError
 class ResponseProcess:
     def __init__(self, tweet_to_replies):
         self.tweet_to_replies = tweet_to_replies
+        self.new_tweets = 0
+        self.new_errors = 0
 
     def process_tweet(self, tweet_id, response):
         try:
@@ -17,6 +19,7 @@ class ResponseProcess:
             tweet.save()
 
             self._mark_replies_as_processed(tweet_id)
+            self.new_tweets += 1
         except (ValidationError, NotUniqueError) as e:
             pass
 
@@ -31,6 +34,7 @@ class ResponseProcess:
             error.save()
 
             self._mark_replies_as_processed(tweet_id)
+            self.new_errors += 1
         except NotUniqueError as e:
             pass
         except ValidationError as e:
@@ -41,16 +45,14 @@ class ResponseProcess:
         """
         Sets look_for_upstream=False for every
         """
-        for reply in self.tweet_to_replies[tweet_id]:
-            reply.look_for_upstream = False
-            reply.save()
+        ret = Tweet.objects(id__in=self.tweet_to_replies[tweet_id]).update(
+            look_for_upstream=False
+        )
 
 def search_for_nonprocessed_tweets(apps, db):
     # Look for tweets that needs processing
-    replies = Tweet.objects(look_for_upstream=True)
-    print(f"Looking upstream tweets for {len(replies)} tweets")
 
-    upstream_ids = set(t.in_reply_to_status_id for t in replies)
+    upstream_ids = set(Tweet.objects(look_for_upstream=True).distinct("in_reply_to_status_id"))
     print(f"Tweets to look for: {len(upstream_ids)}")
 
     ## Beware! Do not check those already having errors
@@ -64,8 +66,8 @@ def search_for_nonprocessed_tweets(apps, db):
     print(f"Tweets without errors: {len(upstream_ids)}")
 
     tweet_to_replies = defaultdict(list)
-    for reply in replies:
-        tweet_to_replies[reply.in_reply_to_status_id].append(reply)
+    for reply in Tweet.objects(look_for_upstream=True):
+        tweet_to_replies[reply.in_reply_to_status_id].append(reply.id)
 
     processor = ResponseProcess(tweet_to_replies)
 
@@ -76,10 +78,10 @@ def search_for_nonprocessed_tweets(apps, db):
         processor.process_error,
     )
 
-    print(f"There are {new_tweets} new tweets and {new_errors} new errors")
+    print(f"There are {processor.new_tweets} new tweets and {processor.new_errors} new errors")
 
 
-def find_upstream_tweets(database, apps_file="config/my_apps.json", sleep_time=300):
+def find_upstream_tweets(database, apps_file, sleep_time=300):
     """
     Look for tweets whose replies are within our database
     """
