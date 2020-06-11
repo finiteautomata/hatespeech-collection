@@ -44,6 +44,8 @@ def download_article(tweet):
             return {
                 "body" : article.text,
                 "title": article.title,
+                "url": article.url,
+                'html': article.html,
             }
     except (KeyError, IndexError) as e:
         pass
