@@ -13,7 +13,8 @@ default_queries = [
     "@clarincom",
     "@cronica",
     "@perfilcom",
-
+    "@izquierdadiario",
+    "@pagina12",
     #Diarios Españoles
     "@elmundoes",
     "@lavanguardia",
@@ -24,7 +25,7 @@ default_queries = [
     "@latercera", # Diario chileno
     # Diarios de derecha
     "@laderechadiario",
-    "@PrensaRepublica",
+    #"@PrensaRepublica",
  ]
 
 
