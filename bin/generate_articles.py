@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 import fire
 from multiprocessing import Pool
 from tqdm.auto import tqdm
@@ -8,18 +9,28 @@ import newspaper as ns
 from hatespeech_models import Article, Tweet
 from hate_collector.article import download_article
 from hate_collector import connect_to_db
+import queue
 import tweepy
 
 
-def download_article_and_replies(tweet):
+
+def create_article(tweet):
+    if Article.objects(tweet_id=tweet["_id"]).count() > 0:
+        # Already created, skipping
+        return
+
     art = download_article(tweet)
+    if not art:
+        # Couldn't download
+        return
+
     # Now ret should be a dict with "body" and "title" keys
     replies = Tweet.objects(in_reply_to_status_id=tweet["_id"]).as_pymongo()
+    tweet["article"] = art
+    tweet["replies"] = replies
+    Article.from_tweet(tweet).save()
 
-    return (art, replies)
-
-
-def generate_articles(database, num_workers=4, clean_before=True):
+def generate_articles(database, num_workers=4, clean_before=False):
     """
     Generate articles
     """
@@ -47,27 +58,34 @@ def generate_articles(database, num_workers=4, clean_before=True):
     print(f"There are {tweets.count()/1000:.2f}K news\n\n")
     print("Creating articles...")
 
-    new_arts = 0
-    new_replies = 0
+    pbar = tqdm(total=len(tweets))
+    q = queue.Queue()
+    stopping = threading.Event()
 
-    with Pool(num_workers) as p:
-        total = len(tweets)
-        articles = tqdm(p.imap(download_article_and_replies, tweets), total=total)
-
-        for tw, (art, replies) in zip(tweets, articles):
+    def worker(timeout=1):
+        db = connect_to_db(database)
+        while not stopping.is_set():
             try:
-                if Article.objects(tweet_id=tw.id).count() > 0:
-                    continue
-                if art:
-                    tw["article"] = art
-                    tw["replies"] = replies
-                    Article.from_tweet(tw).save()
-                    new_arts += 1
-                    new_replies += len(replies)
-            except NotUniqueError as e:
+                tweet = q.get(True, timeout)
+                create_article(tweet)
+                pbar.update()
+
+                q.task_done()
+            except queue.Empty:
                 pass
 
-    print("f{}")
+    threads = []
+    print(f"Creating {num_workers} threads")
+    for i in range(num_workers):
+        t = threading.Thread(target=worker)
+        t.start()
+        threads.append(t)
+
+    for tw in tweets:
+        q.put(tw)
+
+    q.join()
+    stopping.set()
     print(f"There are {Article.objects.count()} instances")
 
 if __name__ == '__main__':
