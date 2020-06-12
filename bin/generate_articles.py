@@ -57,8 +57,7 @@ def generate_articles(database, num_workers=4, clean_before=False):
     #tweets = list(tweets)
     print(f"There are {tweets.count()/1000:.2f}K news\n\n")
     print("Creating articles...")
-
-    pbar = tqdm(total=len(tweets))
+    pbar = tqdm(total=tweets.count())
     q = queue.Queue()
     stopping = threading.Event()
 
