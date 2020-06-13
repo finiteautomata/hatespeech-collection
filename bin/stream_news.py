@@ -59,21 +59,27 @@ def stream_news(
     for i, word in enumerate(queries):
         app = apps[-(i+1) % len(apps)]
         print(f"Creating listener for {word} with {app.me().screen_name}")
-        listener = stream_query(word, app, queue, languages=["es"])
-        listeners.append(listener)
+        stream, listener = stream_query(word, app, queue, languages=["es"])
+        listeners.append((stream, listener))
 
     last_count = defaultdict(int)
+    time.sleep(report_secs)
     while True:
         # Print a report from time to time
         print("=" * 40 + '\n\n')
         print(datetime.datetime.now())
 
         new_count = 0
-        for listener in listeners:
+        for stream, listener in listeners:
             old_count = last_count[listener.query]
             last_count[listener.query] = listener.count
             new_tweets = last_count[listener.query] - old_count
             print(f"{listener.query:<25} -- {listener.count / 1000:.2f}K tweets ({new_tweets:<4} new tweets)")
+
+            if new_tweets == 0:
+                print("Restarting")
+                stream.disconnect()
+                stream.filter(track=[listener.query], is_async=True)
 
             new_count += new_tweets
 
