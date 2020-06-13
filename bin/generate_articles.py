@@ -30,7 +30,7 @@ def create_article(tweet):
     tweet["replies"] = replies
     Article.from_tweet(tweet).save()
 
-def generate_articles(database, num_workers=4, clean_before=False):
+def generate_articles(database, num_workers=4, clean_before=False, screen_names=None):
     """
     Generate articles
     """
@@ -42,7 +42,8 @@ def generate_articles(database, num_workers=4, clean_before=False):
         print(f"Cleaning {Article.objects.count()} objects")
         Article.drop_collection()
 
-    screen_names = [t[1:].lower() for t in db.tweet.distinct('query') if t is not None]
+    if screen_names is None:
+        screen_names = [t[1:].lower() for t in db.tweet.distinct('query') if t is not None]
     print(f"Screen names: {' - '.join(screen_names)}")
 
     """
