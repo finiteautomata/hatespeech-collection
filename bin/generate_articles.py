@@ -40,6 +40,10 @@ def generate_articles(database, num_workers=4, clean_before=False, screen_names=
 
     if clean_before:
         print(f"Cleaning {Article.objects.count()} objects")
+        inp = input("Type yes to confirm: ")
+        if inp != "yes":
+            print("Cancelling")
+            return
         Article.drop_collection()
 
     if screen_names is None:
@@ -54,7 +58,7 @@ def generate_articles(database, num_workers=4, clean_before=False, screen_names=
         user_name__in=screen_names,
         in_reply_to_status_id=None,
         retweeted_status=None
-    ).as_pymongo()
+    ).order_by("created_at").as_pymongo()
     #tweets = list(tweets)
     print(f"There are {tweets.count()/1000:.2f}K news\n\n")
     print("Creating articles...")
