@@ -18,7 +18,7 @@ def correct_text(database, num_workers=4):
     print(f"Correcting {media} texts")
     db = connect_to_db(database)
 
-    articles = Article.objects(user__in=media)
+    articles = Article.objects(user__in=media).only("id")
     pbar = tqdm(total=articles.count())
     q = queue.Queue()
     stopping = threading.Event()
@@ -27,9 +27,10 @@ def correct_text(database, num_workers=4):
         db = connect_to_db(database)
         while not stopping.is_set():
             try:
-                article = q.get(True, timeout)
+                article_id = q.get(True, timeout)
 
-                doc = lxml.html.fromstring(art.html)
+                article = Article.objects.get(id=article_id)
+                doc = lxml.html.fromstring(article.html)
 
                 article.body = body_getters[article.user](doc)
                 article.save()
@@ -40,6 +41,11 @@ def correct_text(database, num_workers=4):
                 pass
             except ValidationError as e:
                 print(e)
+                q.task_done()
+            except IndexError as e:
+                print(e)
+                print(article.tweet_id)
+                q.task_done()
 
 
     threads = []
@@ -50,7 +56,7 @@ def correct_text(database, num_workers=4):
         threads.append(t)
 
     for art in articles:
-        q.put(art)
+        q.put(str(art.id))
     #for tw in tweets:
     #    q.put(tw)
 

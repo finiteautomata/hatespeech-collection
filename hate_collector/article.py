@@ -15,9 +15,7 @@ def __get_text_infobae(doc):
     """
     children = list(elem.getchildren())
 
-    last = children[-1]
-
-    while len(list(children[-1].iter("a"))) > 0:
+    while children and len(list(children[-1].iter("a"))) > 0:
         children.pop(-1)
 
     """
