@@ -78,9 +78,9 @@ mongoexport -d hatespeech-news -c article --jsonArray --pretty  --out dumps/hate
 If you want to create a specific dump for coronavirus
 ```
 mongoexport -d hatespeech-news -c article --jsonArray --pretty \
---query '{"user": {"$in": ["LANACION", "clarincom", "cronica", "infobae", "perfilcom"] }, "$text": {"$search": "coronavirus covid-19 cuarentena normalidad aislamiento padecimiento encierro fase infectados Wuhan distanciamiento fiebre síntomas dengue aedes mosquito descacharrar cacharro"}}' \
+--query '{"user": {"$in": ["LANACION", "clarincom", "cronica", "infobae", "perfilcom"] }, "created_at":{ "$gte": { "$date": "2020-02-10T00:00:00Z"} }, "$text": {"$search": "coronavirus covid-19 cuarentena normalidad aislamiento padecimiento encierro fase infectados Wuhan distanciamiento fiebre síntomas dengue aedes mosquito descacharrar cacharro"}}' \
 --fields 'tweet_id,text,slug,title,url,user,body,created_at,comments' \
---out dumps/coronavirus-argentina-v1.json
+--out dumps/coronavirus-argentina-v1.1.json
 ```
 ### Stream tweets commenting about news
 
