@@ -1,26 +1,34 @@
 import newspaper as ns
 
-def _download_infobae(article):
+def __get_text_infobae(doc):
     """
-    Checked at: 8 Apr 2020
+    Checked at: 16 Jun 2020
     newspaper cannot parse properly infobae => let's do it manually!
 
     Everything seems to be under this div#article-content
     """
-    elem = article.doc.get_element_by_id("article-content")
+    elem = doc.get_element_by_id("article-content")
 
-    text = ""
-    for par in elem.iter("p"):
-        children = list(par)
-        if len(children) > 0:
-            text += " ".join([c.text or '' for c in children])
-        elif par.text:
-            text += par.text
-        else:
-            continue
-        text += "\n"
+    """
+    Esto es código particular de infobae
+    Saco los links que están al pie de la nota
+    """
+    children = list(elem.getchildren())
 
-    article.text = text
+    while children and len(list(children[-1].iter("a"))) > 0:
+        children.pop(-1)
+
+    """
+    Me quedo con el texto
+    """
+    text_children = [t for t in children if t.tag not in ["meta", "script"]]
+    text = "\n\n".join(t.text_content().strip() for t in text_children)
+
+    return text
+
+body_getters = {
+    "infobae": __get_text_infobae,
+}
 
 def download_article(tweet):
     """
@@ -39,7 +47,7 @@ def download_article(tweet):
         article.parse()
 
         if user_name == "infobae":
-            _download_infobae(article)
+            article.text = __get_text_infobae(article.doc)
         if len(article.text) > 0:
             return {
                 "body" : article.text,
