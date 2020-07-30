@@ -75,10 +75,23 @@ mongodump --db DB --collection article --out dumps/
 mongoexport -d hatespeech-news -c article --jsonArray --pretty  --out dumps/hatespeech-articles.json
 ```
 
-If you want to create a specific dump for coronavirus
+If you want to create a specific dump for coronavirus, you can use
+
 ```
-mongoexport -d hatespeech-news -c article --jsonArray --pretty \
---query '{"user": {"$in": ["LANACION", "clarincom", "cronica", "infobae", "perfilcom"] }, "created_at":{ "$gte": { "$date": "2020-02-10T00:00:00Z"} }, "$text": {"$search": "coronavirus covid-19 cuarentena normalidad aislamiento padecimiento encierro fase infectados Wuhan distanciamiento fiebre síntomas dengue aedes mosquito descacharrar cacharro"}}' \
+python bin/generate_release.py <DATABASE_NAME> <QUERY_FILE> <OUT>
+```
+
+For instance...
+
+```
+python bin/generate_release.py hatespeech-news config/query_2.0.json dumps/coronavirus-v2.json
+```
+
+Also, you can just use `mongoexport`
+
+```
+mongoexport -d <DATABASE> -c article --jsonArray --pretty \
+--query <QUERY> \
 --fields 'tweet_id,text,slug,title,url,user,body,created_at,comments' \
 --out dumps/coronavirus-argentina-v1.1.json
 ```
