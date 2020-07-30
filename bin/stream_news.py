@@ -3,6 +3,7 @@ from mongoengine import connect
 from tweepyrate import create_apps
 import datetime
 import time
+import random
 from collections import defaultdict
 from tweepyrate.streaming import create_queue, stream_query
 from hate_collector import TweetWorker
@@ -24,7 +25,7 @@ default_queries = [
     # Chilenos
     "@latercera", # Diario chileno
     # Diarios de derecha
-    "@laderechadiario",
+    "@laderechamedios",
     #"@PrensaRepublica",
  ]
 
@@ -55,6 +56,8 @@ def stream_news(
     print(f"Creating queue and {num_workers} workers")
     queue = create_queue(num_workers, TweetWorker)
     listeners = []
+
+    random.shuffle(queries)
 
     for i, word in enumerate(queries):
         app = apps[-(i+1) % len(apps)]
