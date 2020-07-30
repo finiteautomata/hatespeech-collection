@@ -1,0 +1,23 @@
+{
+    "users" : ["LANACION", "clarincom", "cronica", "infobae", "perfilcom"],
+    "min_date" : "2020-02-10T00:00:00Z",
+    "search_terms" :[
+        "coronavirus",
+        "covid",
+        "cuarentena",
+        "normalidad",
+        "aislamiento ",
+        "padecimiento",
+        "encierro",
+        "fase",
+        "infectados",
+        "Wuhan",
+        "distanciamiento",
+        "fiebre",
+        "síntomas",
+        "dengue",
+        "aedes",
+        "mosquito",
+        "cacharro"
+    ]
+}
