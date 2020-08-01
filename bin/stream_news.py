@@ -34,7 +34,7 @@ default_queries = [
 
 def stream_news(
     database, queries=default_queries, apps_file="config/my_apps.json",
-    num_workers=3, report_secs=600):
+    num_workers=3, report_secs=600, verbose=False):
     """
     Look for tweets mentioning (or from) any of these newspapers
 
@@ -62,7 +62,10 @@ def stream_news(
     for i, word in enumerate(queries):
         app = apps[-(i+1) % len(apps)]
         print(f"Creating listener for {word} with {app.me().screen_name}")
-        stream, listener = stream_query(word, app, queue, languages=["es"])
+        stream, listener = stream_query(
+            word, app, queue, languages=["es"],
+            listener_args={"verbose": verbose}
+        )
         listeners.append((stream, listener))
 
     last_count = defaultdict(int)
