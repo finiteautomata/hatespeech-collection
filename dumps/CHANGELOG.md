@@ -1,5 +1,43 @@
 # CHANGELOG datasets coronavirus-argentina
 
+## coronavirus-argentina-v4.0
+
+- Extiende un mes los datos 
+
+
+### Distribución espacial:
+
+2020/02/10 hasta 2020/10/22 (8 meses y 12 días)
+
+
+### Cantidad
+
+84,192 artículos (casi 10K artículos más)
+
+
+infobae    -- 31267 -- Antes: 26986 (+4281 ) -- 115.86
+perfilcom  -- 6192  -- Antes: 5639  (+553  ) -- 109.81
+LANACION   -- 11186 -- Antes: 10231 (+955  ) -- 109.33
+cronica    -- 13077 -- Antes: 11574 (+1503 ) -- 112.99
+clarincom  -- 22470 -- Antes: 20120 (+2350 ) -- 111.68
+
+Todas las noticias: 226655 (30K más aprox)
+
+cronica         -- 22874
+clarincom       -- 35251
+infobae         -- 46139
+elmundoes       -- 22915
+latercera       -- 7507 
+perfilcom       -- 9330 
+elpaisuy        -- 13464
+LANACION        -- 18834
+LaVanguardia    -- 15121
+abc_es          -- 27294
+izquierdadiario -- 2876 
+laderechadiario -- 739  
+pagina12        -- 3680 
+laderechamedios -- 631
+
 ## coronavirus-argentina-v3.0 y news-all-v3.json
 
 - Extiende casi dos meses los datos
