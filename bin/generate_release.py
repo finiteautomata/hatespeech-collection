@@ -1,7 +1,6 @@
 import os
-import fire
 import json
-import subprocess
+import fire
 from hate_collector import connect_to_db
 
 def generate_mongo_query(query_json):
@@ -9,17 +8,24 @@ def generate_mongo_query(query_json):
     Generates a mongo query from a JSON query
     """
 
-    text_query = " ".join(query_json["search_terms"])
-
     mongo_query = {
-        "user": {"$in": query_json["users"]},
-        "created_at": {"$gte": {"$date": query_json["min_date"]}},
-        "$text": {"$search": text_query},
     }
+
+    if "users" in query_json:
+        mongo_query["user"] = { "$in": query_json["users"] }
+
+    if "min_date" in query_json:
+        mongo_query["created_at"] = {
+            "$gte": {"$date": query_json["min_date"]}
+        }
+
+    if "search_terms" in query_json:
+        text_query = " ".join(query_json["search_terms"])
+        mongo_query["$text"] = {"$search": text_query}
 
     return json.dumps(mongo_query)
 
-def generate_release(database, query, out):
+def generate_release(database, out, query=None):
     """
     Generate a release of the data
 
@@ -39,12 +45,15 @@ def generate_release(database, query, out):
     with open(query) as f:
         query = json.load(f)
 
-    mongo_query = generate_mongo_query(query)
 
     export_command = f"""mongoexport -d {database} -c article --jsonArray --pretty \
---query '{mongo_query}' \
---fields 'tweet_id,text,slug,title,url,user,body,created_at,comments' \
---out {out}"""
+    --fields 'tweet_id,text,slug,title,url,user,body,created_at,comments' \
+    --out {out}"""
+
+    if query:
+        mongo_query = generate_mongo_query(query)
+        export_command += f" --query '{mongo_query}' "
+
 
     print(export_command)
     os.system(export_command)
