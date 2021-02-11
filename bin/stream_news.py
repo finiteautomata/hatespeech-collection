@@ -25,7 +25,7 @@ default_queries = [
     # Chilenos
     "@latercera", # Diario chileno
     # Diarios de derecha
-    "@laderechamedios",
+    "@laderechadiario",
     #"@PrensaRepublica",
  ]
 
