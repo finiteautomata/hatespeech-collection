@@ -22,6 +22,7 @@ matplotlib = "*"
 hatespeech-models = {editable = true,path = "./hatespeech-models"}
 termcolor = "*"
 seaborn = "*"
+motor = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.9"
