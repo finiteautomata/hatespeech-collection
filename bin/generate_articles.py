@@ -14,13 +14,13 @@ import tweepy
 
 
 
-def create_article(tweet):
+def create_article(tweet, save_without_article):
     if Article.objects(tweet_id=tweet["_id"]).count() > 0:
         # Already created, skipping
         return
 
     art = download_article(tweet)
-    if not art:
+    if not art and not save_without_article:
         # Couldn't download
         return
 
@@ -30,7 +30,10 @@ def create_article(tweet):
     tweet["replies"] = replies
     Article.from_tweet(tweet).save()
 
-def generate_articles(database, num_workers=4, clean_before=False, screen_names=None):
+def should_process(tweet):
+    return not tweet.get("in_reply_to_status_id", None) and not tweet.get("retweeted_status", None)
+
+def generate_articles(database, num_workers=4, clean_before=False, screen_names=None, save_without_article=True):
     """
     Generate articles
     """
@@ -56,9 +59,7 @@ def generate_articles(database, num_workers=4, clean_before=False, screen_names=
     """
     tweets = Tweet.objects(
         user_name__in=screen_names,
-        in_reply_to_status_id=None,
-        retweeted_status=None
-    ).order_by("created_at").as_pymongo()
+    ).order_by("-created_at").as_pymongo()
     #tweets = list(tweets)
     print(f"There are {tweets.count()/1000:.2f}K news\n\n")
     print("Creating articles...")
@@ -71,9 +72,11 @@ def generate_articles(database, num_workers=4, clean_before=False, screen_names=
         while not stopping.is_set():
             try:
                 tweet = q.get(True, timeout)
-                create_article(tweet)
-                pbar.update()
 
+                if should_process(tweet):
+                    create_article(tweet, save_without_article)
+
+                pbar.update()
                 q.task_done()
             except queue.Empty:
                 pass
